@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -21,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.testllyods.domain.DomainPost
@@ -28,50 +31,93 @@ import com.example.testllyods.domain.DomainPost
 @Composable
 fun PostScreen(viewModel: PostViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsState()
+    PostScreenContent(
+        state = state,
+        onLoadClick = { viewModel.fetchPosts(0) },
+        onLoadFilteredClick = { viewModel.fetchPosts(21) }
+    )
+}
 
-    when {
-        state.isLoading -> Box(
+@Composable
+fun PostScreenContent(
+    state: PostsUiState,
+    onLoadClick: () -> Unit,
+    onLoadFilteredClick: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(40.dp),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            CircularProgressIndicator()
-        }
+            Button(
+                onClick = onLoadClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("load_button")
+            ) {
+                Text(text = "Load All")
+            }
 
-        state.error != null -> Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "Error: ${state.error}")
-        }
-
-        else -> LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(22.dp),
-            verticalArrangement = Arrangement.spacedBy(25.dp)
-        ) {
-            items(items = state.users, key = { it.id }) { post ->
-
-                PostItemUi(post)
-
+            Button(
+                onClick = onLoadFilteredClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("load_filtered_button")
+            ) {
+                Text(text = "ID > 20")
             }
         }
 
+        Box(modifier = Modifier.weight(1f)) {
+            when {
+                state.isLoading -> Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(40.dp)
+                        .testTag("loading_indicator"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+
+                state.error != null -> Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag("error_message"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "Error: ${state.error}")
+                }
+
+                else -> LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag("post_list"),
+                    contentPadding = PaddingValues(22.dp),
+                    verticalArrangement = Arrangement.spacedBy(25.dp)
+                ) {
+                    items(items = state.users, key = { it.id }) { post ->
+                        PostItemUi(post)
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
 fun PostItemUi(post: DomainPost) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("post_card_${post.id}"),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-
             Text(
                 text = "Id: ${post.id}",
                 style = MaterialTheme.typography.titleMedium
@@ -80,7 +126,7 @@ fun PostItemUi(post: DomainPost) {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Age: ${post.body}",
+                text = "Body: ${post.body}",
                 style = MaterialTheme.typography.bodyMedium
             )
 
