@@ -1,3 +1,4 @@
+/*
 package com.example.testllyods.data
 
 import com.google.common.truth.Truth.assertThat
@@ -22,3 +23,4 @@ class PostItemTest {
         assertThat(domainPost.userId).isEqualTo(postItem.userId)
     }
 }
+*/

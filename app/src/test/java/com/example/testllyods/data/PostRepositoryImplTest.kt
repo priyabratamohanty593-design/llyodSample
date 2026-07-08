@@ -10,12 +10,13 @@ import org.junit.Test
 
 class PostRepositoryImplTest {
 
-    private val apiService: ApiService = mockk()
-    private lateinit var repository: PostRepositoryImpl
+    private lateinit var apiService: ApiService
+    private lateinit var repository: PostRepoImpl
 
     @Before
     fun setUp() {
-        repository = PostRepositoryImpl(apiService)
+        apiService  = mockk()
+        repository = PostRepoImpl(apiService)
     }
 
     @Test

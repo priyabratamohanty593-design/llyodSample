@@ -1,27 +1,19 @@
 package com.example.testllyods.presentation
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -29,76 +21,50 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.testllyods.domain.DomainPost
 
 @Composable
-fun PostScreen(viewModel: PostViewModel = hiltViewModel()) {
-    val state by viewModel.uiState.collectAsState()
-    PostScreenContent(
+fun PostScreen(viewModel : PostViewModel = hiltViewModel()){
+    val state  by viewModel.uiState.collectAsState()
+
+    PostContent(
         state = state,
-        onLoadClick = { viewModel.fetchPosts(0) },
-        onLoadFilteredClick = { viewModel.fetchPosts(21) }
+        onButtonClick = {viewModel.fetchdata()}
     )
 }
 
 @Composable
-fun PostScreenContent(
-    state: PostsUiState,
-    onLoadClick: () -> Unit,
-    onLoadFilteredClick: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
+fun PostContent(state: PostUiState, onButtonClick: () -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth()){
+        Button(
             modifier = Modifier
+                .height(40.dp)
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .testTag("load_button"),
+            onClick = onButtonClick
         ) {
-            Button(
-                onClick = onLoadClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("load_button")
-            ) {
-                Text(text = "Load All")
-            }
-
-            Button(
-                onClick = onLoadFilteredClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("load_filtered_button")
-            ) {
-                Text(text = "ID > 20")
-            }
+            Text(" load button")
         }
-
-        Box(modifier = Modifier.weight(1f)) {
+        Box(modifier = Modifier.weight(1f)){
             when {
-                state.isLoading -> Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(40.dp)
-                        .testTag("loading_indicator"),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+                state.isLoading ->
+                    Box(modifier = Modifier.fillMaxSize()){
+                        CircularProgressIndicator(
+                            modifier = Modifier.testTag("loading_indicator")
+                        )
+                    }
 
-                state.error != null -> Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .testTag("error_message"),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Error: ${state.error}")
+                state.error != null ->{
+                    Box(modifier = Modifier.fillMaxSize()){
+                        Text(
+                            text = "Network : ${state.error}",
+                            modifier = Modifier.testTag("error_message")
+                        )
+                    }
+
                 }
 
                 else -> LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .testTag("post_list"),
-                    contentPadding = PaddingValues(22.dp),
-                    verticalArrangement = Arrangement.spacedBy(25.dp)
+                    modifier = Modifier.fillMaxSize().testTag("post_list")
                 ) {
-                    items(items = state.users, key = { it.id }) { post ->
+                    items(items = state.posts, key = { it.id}){ post ->
                         PostItemUi(post)
                     }
                 }
@@ -109,40 +75,14 @@ fun PostScreenContent(
 
 @Composable
 fun PostItemUi(post: DomainPost) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("post_card_${post.id}"),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "Id: ${post.id}",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "Body: ${post.body}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "Title: ${post.title}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "UserId: ${post.userId}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
+    Column(modifier = Modifier.fillMaxWidth().testTag("post_item_${post.id}")){
+        Text(text = " id : ${post.id}")
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(text = " userId : ${post.userId}")
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(text = " body : ${post.body}")
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(text = " title : ${post.title}")
+        Spacer(modifier = Modifier.height(5.dp))
     }
 }

@@ -1,17 +1,11 @@
 package com.example.testllyods.presentation
 
-import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.testllyods.domain.DomainPost
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
 class PostScreenTest {
 
     @get:Rule
@@ -19,53 +13,58 @@ class PostScreenTest {
 
     @Test
     fun loadingState_showsLoadingIndicator() {
-        val state = PostsUiState(isLoading = true)
+        val state = PostUiState(isLoading = true)
 
         composeTestRule.setContent {
-            PostScreenContent(state = state, onLoadClick = {})
+            PostContent(state = state, onButtonClick = {})
         }
 
         composeTestRule.onNodeWithTag("loading_indicator").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("load_button").assertIsDisplayed()
     }
 
     @Test
     fun errorState_showsErrorMessage() {
-        val errorMessage = "Network Error"
-        val state = PostsUiState(error = errorMessage)
+        val errorMessage = "Timeout Error"
+        val state = PostUiState(error = errorMessage)
 
         composeTestRule.setContent {
-            PostScreenContent(state = state, onLoadClick = {})
+            PostContent(state = state, onButtonClick = {})
         }
 
-        // Substring handles the "Error: " prefix in the UI
-        composeTestRule.onNodeWithText(errorMessage, substring = true).assertIsDisplayed()
         composeTestRule.onNodeWithTag("error_message").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Network :  Error : Timeout Error", substring = true).assertIsDisplayed()
     }
 
     @Test
     fun successState_showsListOfPosts() {
         val posts = listOf(
-            DomainPost(body = "body 1", id = 1, title = "title 1", userId = 101)
+            DomainPost(body = "body 1", id = 1, title = "title 1", userId = 101),
+            DomainPost(body = "body 2", id = 2, title = "title 2", userId = 102)
         )
-        val state = PostsUiState(users = posts)
+        val state = PostUiState(posts = posts)
 
         composeTestRule.setContent {
-            PostScreenContent(state = state, onLoadClick = {})
+            PostContent(state = state, onButtonClick = {})
         }
 
         composeTestRule.onNodeWithTag("post_list").assertIsDisplayed()
-        composeTestRule.onNodeWithText("title 1", substring = true, ignoreCase = true).assertIsDisplayed()
+        composeTestRule.onNodeWithTag("post_item_1").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("post_item_2").assertIsDisplayed()
+        
+        composeTestRule.onNodeWithText(" title : title 1", substring = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText(" title : title 2", substring = true).assertIsDisplayed()
     }
 
     @Test
-    fun clickLoadButton_triggersOnLoadClick() {
+    fun clickLoadButton_triggersOnButtonClick() {
         var clicked = false
-        val state = PostsUiState()
+        val state = PostUiState()
 
         composeTestRule.setContent {
-            PostScreenContent(
+            PostContent(
                 state = state,
-                onLoadClick = { clicked = true }
+                onButtonClick = { clicked = true }
             )
         }
 
